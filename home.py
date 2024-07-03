@@ -49,7 +49,7 @@ class Home:
         sec_user_id = profile.sec_uid
         max_cursor = '0'
         index = 1
-        while True:
+        while index <= 10:
             video_list = []
             params = get_list_params()
             params['webid'] = self.info['webid']
@@ -91,13 +91,14 @@ class Home:
                 save_video_detail(path, video)
                 if len(video.images) > 0:
                     for img_index, image in enumerate(video.images):
-                        download_media(path, f'image_{img_index}', image['url_list'][0], 'image', f'第{img_index}张图片')
+                        download_media(path, f'image_{img_index}', image['url_list'][0], 'image', f'第{img_index}张图片', headers=self.headers, cookies=self.info['cookies'])
                 else:
-                    download_media(path, 'cover', video.video_cover, 'image', '视频封面')
-                download_media(path, 'video', video.video_addr, 'video')
+                    download_media(path, 'cover', video.video_cover, 'image', '视频封面', headers=self.headers, cookies=self.info['cookies'])
+                download_media(path, 'video', video.video_addr, 'video', headers=self.headers, cookies=self.info['cookies'])
                 print(f'用户: {nickname}, 第{index}条视频, 标题: {title} 保存成功, 共 {aweme_count} 条视频信息（如果存在共创视频，数量可能更多！）')
                 print('============================================================================================================')
-            except:
+            except Exception as e:
+                raise e
                 print(f'用户: {nickname}, 第{index}条视频, 标题: {norm_str(video.title)} 保存失败')
             finally:
                 index += 1

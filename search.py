@@ -20,8 +20,8 @@ class Search:
         params['webid'] = self.info['webid']
         params['msToken'] = self.info['msToken']
         splice_url_str = splice_url(params)
-        xs = js.call('get_dy_xb', splice_url_str)
-        params['X-Bogus'] = xs
+        # xs = js.call('get_dy_xb', splice_url_str)
+        # params['X-Bogus'] = xs
         video_list = []
         while len(video_list) < number:
             post_url = self.search_url + '?' + splice_url(params)
@@ -52,8 +52,8 @@ class Search:
         params['webid'] = self.info['webid']
         params['msToken'] = self.info['msToken']
         splice_url_str = splice_url(params)
-        xs = js.call('get_dy_xb', splice_url_str)
-        params['X-Bogus'] = xs
+        # xs = js.call('get_dy_xb', splice_url_str)
+        # params['X-Bogus'] = xs
         index = 0
         while index < number:
             post_url = self.search_url + '?' + splice_url(params)

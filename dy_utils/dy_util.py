@@ -9,21 +9,21 @@ from pojo.video import Video_Detail
 from pojo.user import User_Detail
 js = execjs.compile(open(r'./static/dy.js', 'r', encoding='gb18030').read())
 
-def download_media(path, name, url, type, info=''):
+def download_media(path, name, url, type, info='', headers=None, cookies=None):
     # 5次错误机会
     for i in range(5):
         try:
             if type == 'image':
                 # print(f"{info}图片开始下载, {url}")
                 print(f"{info}图片开始下载")
-                content = requests.get(url).content
+                content = requests.get(url, headers=headers, cookies=cookies).content
                 with open(path + '/' + name + '.jpg', mode="wb") as f:
                     f.write(content)
                     print(f"{info}图片下载完成")
             elif type == 'video':
                 print(f"{name}开始下载, {url}")
                 start_time = time.time()
-                res = requests.get(url, stream=True)
+                res = requests.get(url, stream=True, headers=headers, cookies=cookies)
                 size = 0
                 chunk_size = 1024 * 1024
                 content_size = int(res.headers["content-length"])
