@@ -37,7 +37,8 @@ def download_media(path, name, url, type, info='', headers=None, cookies=None):
                               end='')
                     print(f"{name}下载完成")
             break
-        except:
+        except Exception as e:
+            raise e
             print(f"第{i+1}次下载失败，重新下载, 剩余{4-i}次机会")
             continue
 

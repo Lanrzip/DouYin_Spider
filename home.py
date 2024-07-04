@@ -49,7 +49,8 @@ class Home:
         sec_user_id = profile.sec_uid
         max_cursor = '0'
         index = 1
-        while index <= 10:
+        batch = 1
+        while batch <= 1:
             video_list = []
             params = get_list_params()
             params['webid'] = self.info['webid']
@@ -69,6 +70,7 @@ class Home:
                 video_list.append(video_detail)
             self.save_videos_info(video_list, index, nickname, user_path, aweme_count, need_cover)
             index += len(video_list)
+            batch += 1
             print(f'已经获取到 {index - 1} 条视频信息，共 {profile.aweme_count} 条视频信息（如果存在共创视频，数量可能更多！）')
             if has_more == 0:
                 break
