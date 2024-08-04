@@ -47,7 +47,7 @@ class OneVideo:
                 download_media(path, f'image_{img_index}', image['urlList'][0], 'image', f'第{img_index}张图片')
         else:
             download_media(path, 'cover', video.video_cover, 'image', '视频封面')
-        download_media(path, 'video', video.video_addr, 'video')
+        download_media(path, 'video', video.video_addr, 'video', headers=self.headers, cookies=self.info['cookies'])
         print(f'用户: {nickname}, 标题: {title} 信息保存成功')
         print('===================================================================')
         return video
@@ -63,9 +63,10 @@ class OneVideo:
 if __name__ == '__main__':
     one_video = OneVideo()
     url_list = [
-        'https://www.douyin.com/user/MS4wLjABAAAAp2OG100fRV13HqBbRnbPM_l7DU0eTOaxgL-4_l07fQo?modal_id=7149358157217795368',
-        'https://www.douyin.com/user/MS4wLjABAAAAup3S7EWeZIeBM0-qnT6YmI2nMI4KUtOqiuJBasbbm3o?modal_id=7166141112820747551',
-        'https://www.douyin.com/user/MS4wLjABAAAAh7MdVA-UbMYLeO3_zhA_Z-Mrkh8cDwBCU_qQqucnrFE?modal_id=7137966302055894306',
+        'https://www.douyin.com/user/MS4wLjABAAAAX6f_j8XDs3En19UJgwyvFGEd7XWEn3JFUhqEo_HCdbxpHAP-qjD0CUVCI3kXqq2U?modal_id=7390054299113426185&relation=0&vid=7390054299113426185',
+        # 'https://www.douyin.com/user/MS4wLjABAAAAp2OG100fRV13HqBbRnbPM_l7DU0eTOaxgL-4_l07fQo?modal_id=7149358157217795368',
+        # 'https://www.douyin.com/user/MS4wLjABAAAAup3S7EWeZIeBM0-qnT6YmI2nMI4KUtOqiuJBasbbm3o?modal_id=7166141112820747551',
+        # 'https://www.douyin.com/user/MS4wLjABAAAAh7MdVA-UbMYLeO3_zhA_Z-Mrkh8cDwBCU_qQqucnrFE?modal_id=7137966302055894306',
     ]
     one_video.main(url_list)
 

@@ -2,12 +2,32 @@ import json
 import re
 import time
 import os
+import threading
+import subprocess
+import paramiko
 import execjs
 import requests
 from dy_utils.cookie_utils import get_new_cookies
 from pojo.video import Video_Detail
 from pojo.user import User_Detail
 js = execjs.compile(open(r'./static/dy.js', 'r', encoding='gb18030').read())
+
+
+def get_cpu_usage(ssh):
+    stdin, stdout, stderr = ssh.exec_command("vmstat 1 2 | tail -1 | awk '{print $15}'")
+    idle_cpu = int(stdout.read().strip())
+    return 100 - idle_cpu  # 返回 CPU 使用率
+
+def download_media_from_server(path, url, nickname, index, title, ssh):
+    remote_command = f'/root/miniconda3/bin/python  /root/main/download.py --path {path} --url \"{url}\" --nickname \"{nickname}\" --index {index} --title \"{title}\"'
+    stdin, stdout, stderr = ssh.exec_command(remote_command)
+    return stdout, stderr
+# def download_media_from_server(path, url, nickname, index, title, ssh):
+#     remote_command = f"/root/miniconda3/bin/python  /root/main/download.py --path {path} --url \"{url}\" --nickname {nickname} --index {index} --title {title}"
+#     stdin, stdout, stderr = ssh.exec_command(remote_command)
+#     exit_status = stdout.channel.recv_exit_status()  # 阻塞直到远程命令执行完毕
+#     return exit_status, stdout.read(), stderr.read()
+
 
 def download_media(path, name, url, type, info='', headers=None, cookies=None):
     # 5次错误机会
@@ -23,6 +43,7 @@ def download_media(path, name, url, type, info='', headers=None, cookies=None):
             elif type == 'video':
                 print(f"{name}开始下载, {url}")
                 start_time = time.time()
+                print(url)
                 res = requests.get(url, stream=True, headers=headers, cookies=cookies)
                 size = 0
                 chunk_size = 1024 * 1024
@@ -41,6 +62,104 @@ def download_media(path, name, url, type, info='', headers=None, cookies=None):
             raise e
             print(f"第{i+1}次下载失败，重新下载, 剩余{4-i}次机会")
             continue
+
+
+
+# def download_media(path, name, url, type, info='', headers=None, cookies=None):
+#     # 5次错误机会
+#     for i in range(5):
+#         try:
+#             if type == 'image':
+#                 # print(f"{info}图片开始下载, {url}")
+#                 print(f"{info}图片开始下载")
+#                 content = requests.get(url, headers=headers, cookies=cookies).content
+#                 with open(path + '/' + name + '.jpg', mode="wb") as f:
+#                     f.write(content)
+#                     print(f"{info}图片下载完成")
+#             elif type == 'video':
+#                 print(f"{name}开始下载, {url}")
+#                 start_time = time.time()
+#                 res = requests.get(url, stream=True, headers=headers, cookies=cookies)
+#                 size = 0
+#                 chunk_size = 1024 * 1024
+#                 content_size = int(res.headers["content-length"])
+#                 file_path = os.path.join(path, f'{name}.mp4')
+#                 upload_thread = threading.Thread(target=upload_video, args=(path, name))
+#                 upload_thread.start()
+
+#                 with open(file_path, mode="wb") as f:
+#                     start_time = time.time()
+#                     for data in res.iter_content(chunk_size=chunk_size):
+#                         f.write(data)
+#                         size += len(data)
+#                         percentage = size / content_size
+#                         elapsed_time = time.time() - start_time
+#                         print(f'\r视频:%.2fMB\t' % (content_size / 1024 / 1024),
+#                               '下载进度:[%-50s%.2f%%]耗时: %.1fs, ' % ('>' * int(50 * percentage), percentage * 100, time.time() - start_time),
+#                               end='')
+#                     print(f"{name}下载完成")
+
+#                 # 等待上传线程结束
+#                 upload_thread.join()
+#             break
+#         except Exception as e:
+#             # raise e
+#             print(f"第{i+1}次下载失败，重新下载, 剩余{4-i}次机会")
+#             continue
+
+
+# def upload_video(file_path, name):
+#     """
+#     使用scp命令上传视频文件到服务器。
+
+#     参数:
+#         file_path (str): 本地文件路径。
+#         name (str): 文件名称。
+#     """
+#     # 设置服务器信息
+#     server_user = "root"
+#     server_host = "region-42.seetacloud.com"
+#     server_path = "/root/autodl-tmp/"
+#     server_port = 27691
+#     server_password = "8VGQlBc7XbQU"
+
+#     while not os.path.exists(file_path):
+#         time.sleep(1)  # 等待文件创建
+
+#     # while True:
+#     #     # 使用scp命令上传文件
+#     #     scp_command = f"scp -rP {server_port} {file_path} {server_user}@{server_host}:{server_path}"
+#     #     process = subprocess.Popen(scp_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#     #     stdout, stderr = process.communicate()
+
+#     #     if process.returncode == 0:
+#     #         print(f"\n{name}上传完成")
+#     #         break
+#     #     else:
+#     #         print(f"\n上传过程中出错: {stderr}")
+#     #         # time.sleep(5)  # 等待5秒后重试
+#     # 连接到服务器
+#     transport = paramiko.Transport((server_host, server_port))
+#     transport.connect(username=server_user, password=server_password)
+#     sftp = paramiko.SFTPClient.from_transport(transport)
+
+#     try:
+#         # 上传文件
+#         while True:
+#             try:
+#                 remotepath = os.path.join(server_path, os.path.basename(file_path))
+#                 sftp.mkdir(remotepath)
+#                 print(remotepath)
+#                 sftp.put(file_path+'/'+'video.mp4', remotepath+'/'+'video.mp4')
+#                 break
+#             except Exception as e:
+#                 raise e
+#                 print(f"\n上传过程中出错: {e}")
+#                 time.sleep(1)  # 等待5秒后重试
+#     finally:
+#         sftp.close()
+#         transport.close()
+
 
 def timestamp_to_str(timestamp):
     time_local = time.localtime(timestamp)
@@ -369,6 +488,9 @@ def check_info():
         xs = js.call('get_dy_xb', splice_url_str)
         params['X-Bogus'] = xs
         post_url = profile_url + '?' + splice_url(params)
+        # print(post_url)
+        # print(info['cookies'])
+        # print(headers)
         response = requests.get(post_url, headers=headers, cookies=info['cookies'])
         profile_json = response.json()
         print('cookie有效')

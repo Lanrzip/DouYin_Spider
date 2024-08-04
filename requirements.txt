@@ -6,3 +6,4 @@ PyExecJS
 requests
 argparse
 websockets
+paramiko
