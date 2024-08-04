@@ -7,7 +7,6 @@ datas/
 # cache
 cache/
 
-
 # Python specific
 __pycache__/
 *.py[cod]
